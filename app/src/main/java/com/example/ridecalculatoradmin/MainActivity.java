@@ -11,9 +11,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.FormElement;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -44,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void fetchPetrolPrice()
     {
-        ContentPetrol content = new ContentPetrol();
-        content.execute();
+        ContentPetrol1 contentPetrol1 = new ContentPetrol1();
+        contentPetrol1.execute();
     }
 
     public void fetchDieselPrice()
@@ -56,10 +58,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void fetchCNGPrice()
     {
+        ContentCNG contentCNG = new ContentCNG();
+        contentCNG.execute();
 
     }
 
-    private class ContentPetrol extends AsyncTask<Void, Void, Void> {
+    public static void checkElement(String name, Element elem) {
+        if (elem == null) {
+            throw new RuntimeException("Unable to find " + name);
+        }
+    }
+
+    private class ContentPetrol1 extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected void onPreExecute() {
@@ -72,62 +82,124 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             try {
                 //Connect to the website
-                String url = "https://www.bankbazaar.com/fuel/petrol-price-india.html";
+                String url = "https://www.mypetrolprice.com/petrol-price-in-india.aspx";
                 Document document = Jsoup.connect(url).get();
 
-                //Get the logo source of the website
-                Element img = document.select("img").first();
-                // Locate the src attribute
-                String imgSrc = img.absUrl("src");
-                // Download image from URL
-                InputStream input = new java.net.URL(imgSrc).openStream();
-                // Decode Bitmap
-                bitmap = BitmapFactory.decodeStream(input);
-
-                //Get the title of the website
-                title = document.title();
 
                 ArrayList<String> downServers = new ArrayList<>();
-                Element table = document.select("table").get(1); //select the first table.
-                Elements rows = table.select("tr");
-                Log.d("rowssize",rows.size()+"");
+                Elements statesList = document.getElementsByClass("sixteen columns row");
+                Log.d("rowssize",statesList.size()+"");
+                Elements states = statesList.get(3).getAllElements();
 
-                for (int i = 1; i < rows.size(); i++) { //first row is the col names so skip it.
+                //System.out.println("states"+states.toString());
 
-                    Element row = rows.get(i);
-                    Elements cols = row.select("td");
-                    String c = cols.get(0).select("td").toString();
-                    String c1 = c.substring(c.indexOf(".html")+7,c.length());
-                    city = c1.substring(0,c1.indexOf("<"));
-                    String p = cols.get(1).select("td").toString();
-                    String p1 = p.substring(6,p.length());
-                    price = Double.parseDouble(p1.substring(0,p1.indexOf("<")));
+                for(int i = 0;i<states.size();i++)
+                {
+                    Element e = states.get(i);
+                    if(e.is("h2"))
+                    {
+                        String s = e.toString();
+                        String stateName = s.substring(s.indexOf("\">")+2,s.indexOf("</a>"));
+                        System.out.println("state = "+stateName);
+                    }
+                    else
+                    {
 
-                    Log.d("price = ",price+"");
-                    Log.d("city = ",city);
+                        if(e.hasClass("CH"))
+                        {
 
-                    //update Fuel prices
-                    ApiInterface apiService = ApiClient.getRetrofitInstance().create(ApiInterface.class);
-                    Call<ResponseBody> call = apiService.updateFuelPrices(city, price, "Petrol");
-                    call.enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            Log.d("response", response.toString());
+                            String s = e.getAllElements().get(1).toString();
+                            String cityName = s.substring(s.indexOf("title=")+7);
+                            s = cityName.substring(0, cityName.indexOf("Petrol")-1);
+                            System.out.println("city = "+s);
                         }
-
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.d("failure", t.toString());
+                        else if(e.hasClass("txtC"))
+                        {
+                            String s = e.toString();
+                            String price = s.substring(s.indexOf("<b>₹")+5, s.indexOf("</b>"));
+                            System.out.println("price = "+price);
 
                         }
-                    });
-
-
+                    }
                 }
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            progressDialog.dismiss();
+        }
+    }
+
+
+
+    private class ContentCNG extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(MainActivity.this);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                //Connect to the website
+                String url = "https://www.mypetrolprice.com/cng-price-in-india.aspx";
+                Document document = Jsoup.connect(url).get();
+
+
+                ArrayList<String> downServers = new ArrayList<>();
+                Elements statesList = document.getElementsByClass("sixteen columns row");
+                Log.d("rowssize",statesList.size()+"");
+                Elements states = statesList.get(3).getAllElements();
+
+                //System.out.println("states"+states.toString());
+
+                for(int i = 0;i<states.size();i++)
+                {
+                    Element e = states.get(i);
+                    if(e.is("h2"))
+                    {
+                        String s = e.toString();
+                        String stateName = s.substring(s.indexOf("\">")+2,s.indexOf("</a>"));
+                        System.out.println("state = "+stateName);
+                    }
+                    else
+                    {
+
+                        if(e.hasClass("CH"))
+                        {
+
+                            String s = e.getAllElements().get(1).toString();
+                            String cityName = s.substring(s.indexOf("title=")+7);
+                            s = cityName.substring(0, cityName.indexOf("Petrol")-1);
+                            System.out.println("city = "+s);
+                        }
+                        else if(e.hasClass("txtC"))
+                        {
+                            String s = e.toString();
+                            String price = s.substring(s.indexOf("<b>₹")+5, s.indexOf("</b>"));
+                            System.out.println("price = "+price);
+
+                        }
+                    }
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
             return null;
         }
 
@@ -152,65 +224,52 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             try {
                 //Connect to the website
-                String url = "https://www.bankbazaar.com/fuel/diesel-price-india.html";
+                String url = "https://www.mypetrolprice.com/diesel-price-in-india.aspx";
                 Document document = Jsoup.connect(url).get();
 
-                //Get the logo source of the website
-                Element img = document.select("img").first();
-                // Locate the src attribute
-                String imgSrc = img.absUrl("src");
-                // Download image from URL
-                InputStream input = new java.net.URL(imgSrc).openStream();
-                // Decode Bitmap
-                bitmap = BitmapFactory.decodeStream(input);
-
-                //Get the title of the website
-                title = document.title();
 
                 ArrayList<String> downServers = new ArrayList<>();
-                Element table = document.select("table").get(0); //select the first table.
-                Elements rows = table.select("tr");
-                Log.d("rowssize",rows.size()+"");
+                Elements statesList = document.getElementsByClass("sixteen columns row");
+                Log.d("rowssize",statesList.size()+"");
+                Elements states = statesList.get(3).getAllElements();
 
-                for (int i = 1; i < rows.size(); i++) { //first row is the col names so skip it.
+                //System.out.println("states"+states.toString());
 
-                    Element row = rows.get(i);
-                    Elements cols = row.select("td");
-                    String c = cols.get(0).select("td").toString();
-                    String c1 = c.substring(c.indexOf(".html")+7,c.length());
-                    city = c1.substring(0,c1.indexOf("<"));
-                    String p = cols.get(1).select("td").toString();
-                    String p1 = p.substring(6,p.length());
-                    price = Double.parseDouble(p1.substring(0,p1.indexOf("<")));
+                for(int i = 0;i<states.size();i++)
+                {
+                    Element e = states.get(i);
+                    if(e.is("h2"))
+                    {
+                        String s = e.toString();
+                        String stateName = s.substring(s.indexOf("\">")+2,s.indexOf("</a>"));
+                        System.out.println("state = "+stateName);
+                    }
+                    else
+                    {
 
-                    Log.d("price = ",price+"");
-                    Log.d("city = ",city);
+                        if(e.hasClass("CH"))
+                        {
 
-                    //update Fuel prices
-
-                    ApiInterface apiService = ApiClient.getRetrofitInstance().create(ApiInterface.class);
-
-                    Call<ResponseBody> call = apiService.updateFuelPrices(city, price, "Diesel");
-                    call.enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            Log.d("response", response.toString());
+                            String s = e.getAllElements().get(1).toString();
+                            String cityName = s.substring(s.indexOf("title=")+7);
+                            s = cityName.substring(0, cityName.indexOf("Petrol")-1);
+                            System.out.println("city = "+s);
                         }
-
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.d("failure", t.toString());
+                        else if(e.hasClass("txtC"))
+                        {
+                            String s = e.toString();
+                            String price = s.substring(s.indexOf("<b>₹")+5, s.indexOf("</b>"));
+                            System.out.println("price = "+price);
 
                         }
-                    });
-
-
-
+                    }
                 }
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+
             return null;
         }
 
@@ -228,8 +287,8 @@ public class MainActivity extends AppCompatActivity {
         if(v.getId() == R.id.button)
         {
             //fetch fuel prices
-            fetchPetrolPrice();
-            fetchDieselPrice();
+           // fetchPetrolPrice();
+            //fetchDieselPrice();
             fetchCNGPrice();
         }
     }
