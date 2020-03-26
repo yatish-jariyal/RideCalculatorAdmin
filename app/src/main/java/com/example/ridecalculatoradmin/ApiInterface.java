@@ -10,6 +10,6 @@ public interface ApiInterface {
 
     @FormUrlEncoded
     @POST("updateFuelPrices/")
-    Call<ResponseBody> updateFuelPrices(@Field("city") String city, @Field("price") double price, @Field("fuel_type") String fuel_type);
+    Call<ResponseBody> updateFuelPrices(@Field("state") String state, @Field("city") String city, @Field("price") double price, @Field("fuel_type") String fuel_type);
 
 }
