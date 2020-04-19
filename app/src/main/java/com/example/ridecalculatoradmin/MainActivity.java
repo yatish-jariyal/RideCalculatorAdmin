@@ -90,19 +90,20 @@ public class MainActivity extends AppCompatActivity {
                 Elements statesList = document.getElementsByClass("sixteen columns row");
                 Log.d("rowssize",statesList.size()+"");
                 Elements states = statesList.get(3).getAllElements();
-
-                //System.out.println("states"+states.toString());
                 String stateName = "";
                 String cityName = "";
                 String price = "";
+                boolean cityFound = false;
+                boolean priceFound = false;
+
                 for(int i = 0;i<states.size();i++)
                 {
                     Element e = states.get(i);
+
                     if(e.is("h2"))
                     {
                         String s = e.toString();
                         stateName = s.substring(s.indexOf("\">")+2,s.indexOf("</a>"));
-                        System.out.println("state = "+stateName);
                     }
                     else
                     {
@@ -113,28 +114,38 @@ public class MainActivity extends AppCompatActivity {
                             String s = e.getAllElements().get(1).toString();
                             cityName = s.substring(s.indexOf("title=")+7);
                             s = cityName.substring(0, cityName.indexOf("Petrol")-1);
-                            System.out.println("city = "+s);
+                            cityName = s;
+                            cityFound = true;
                         }
                         else if(e.hasClass("txtC"))
                         {
                             String s = e.toString();
                             price = s.substring(s.indexOf("<b>₹")+5, s.indexOf("</b>"));
-                            System.out.println("price = "+price);
+                            priceFound = true;
+
+                            if(cityFound && priceFound)
+                            {
+                                ApiInterface apiservice = ApiClient.getRetrofitInstance().create(ApiInterface.class);
+                                Call <ResponseBody> call = apiservice.updateFuelPrices(stateName, cityName, Double.parseDouble(price), "Petrol");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                                cityFound = priceFound = false;
+                            }
+
+
+
 
                         }
-                        ApiInterface apiservice = ApiClient.getRetrofitInstance().create(ApiInterface.class);
-                        Call <ResponseBody> call = apiservice.updateFuelPrices(stateName, cityName, Double.parseDouble(price), "Petrol");
-                        call.enqueue(new Callback<ResponseBody>() {
-                            @Override
-                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
-                            }
-
-                            @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                            }
-                        });
                     }
                 }
 
@@ -178,11 +189,13 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("rowssize",statesList.size()+"");
                 Elements states = statesList.get(3).getAllElements();
 
-                //System.out.println("states"+states.toString());
 
                 String stateName = "";
                 String cityName = "";
                 String price = "";
+                boolean cityFound, priceFound;
+                cityFound = priceFound = false;
+
                 for(int i = 0;i<states.size();i++)
                 {
                     Element e = states.get(i);
@@ -190,7 +203,6 @@ public class MainActivity extends AppCompatActivity {
                     {
                         String s = e.toString();
                         stateName = s.substring(s.indexOf("\">")+2,s.indexOf("</a>"));
-                        System.out.println("state = "+stateName);
                     }
                     else
                     {
@@ -201,28 +213,35 @@ public class MainActivity extends AppCompatActivity {
                             String s = e.getAllElements().get(1).toString();
                             cityName = s.substring(s.indexOf("title=")+7);
                             s = cityName.substring(0, cityName.indexOf("Petrol")-1);
-                            System.out.println("city = "+s);
+                            cityName = s;
+                            cityFound = true;
                         }
                         else if(e.hasClass("txtC"))
                         {
                             String s = e.toString();
                             price = s.substring(s.indexOf("<b>₹")+5, s.indexOf("</b>"));
-                            System.out.println("price = "+price);
+                            priceFound = true;
+
+                            if(cityFound && priceFound)
+                            {
+                                ApiInterface apiservice = ApiClient.getRetrofitInstance().create(ApiInterface.class);
+                                Call <ResponseBody> call = apiservice.updateFuelPrices(stateName, cityName, Double.parseDouble(price), "CNG");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+
 
                         }
-                        ApiInterface apiservice = ApiClient.getRetrofitInstance().create(ApiInterface.class);
-                        Call <ResponseBody> call = apiservice.updateFuelPrices(stateName, cityName, Double.parseDouble(price), "CNG");
-                        call.enqueue(new Callback<ResponseBody>() {
-                            @Override
-                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
-                            }
-
-                            @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                            }
-                        });
                     }
                 }
 
@@ -264,11 +283,14 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("rowssize",statesList.size()+"");
                 Elements states = statesList.get(3).getAllElements();
 
-                //System.out.println("states"+states.toString());
 
                 String stateName = "";
                 String price = "";
                 String cityName = "";
+
+                boolean cityFound, priceFound;
+                cityFound = priceFound = false;
+
                 for(int i = 0;i<states.size();i++)
                 {
                     Element e = states.get(i);
@@ -276,7 +298,6 @@ public class MainActivity extends AppCompatActivity {
                     {
                         String s = e.toString();
                         stateName = s.substring(s.indexOf("\">")+2,s.indexOf("</a>"));
-                        System.out.println("state = "+stateName);
                     }
                     else
                     {
@@ -287,28 +308,37 @@ public class MainActivity extends AppCompatActivity {
                             String s = e.getAllElements().get(1).toString();
                             cityName = s.substring(s.indexOf("title=")+7);
                             s = cityName.substring(0, cityName.indexOf("Petrol")-1);
-                            System.out.println("city = "+s);
+                            cityName = s;
+                            cityFound = true;
                         }
                         else if(e.hasClass("txtC"))
                         {
                             String s = e.toString();
                             price = s.substring(s.indexOf("<b>₹")+5, s.indexOf("</b>"));
-                            System.out.println("price = "+price);
+
+                            priceFound = true;
+
+                            if(cityFound && priceFound)
+                            {
+                                ApiInterface apiservice = ApiClient.getRetrofitInstance().create(ApiInterface.class);
+                                Call <ResponseBody> call = apiservice.updateFuelPrices(stateName, cityName, Double.parseDouble(price), "Diesel");
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+
+
 
                         }
-                        ApiInterface apiservice = ApiClient.getRetrofitInstance().create(ApiInterface.class);
-                        Call <ResponseBody> call = apiservice.updateFuelPrices(stateName, cityName, Double.parseDouble(price), "Diesel");
-                        call.enqueue(new Callback<ResponseBody>() {
-                            @Override
-                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
-                            }
-
-                            @Override
-                            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                            }
-                        });
                     }
                 }
 
@@ -334,8 +364,8 @@ public class MainActivity extends AppCompatActivity {
         if(v.getId() == R.id.button)
         {
             //fetch fuel prices
-           // fetchPetrolPrice();
-            //fetchDieselPrice();
+            fetchPetrolPrice();
+            fetchDieselPrice();
             fetchCNGPrice();
         }
     }
